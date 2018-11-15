@@ -17,25 +17,33 @@ class App extends Component {
   }
   componentWillMount() {
     /* Create reference to messages in Firebase Database */
+   
+    this.setState({ loading: true });
+    this.getEmployess();
+  }
+
+  getEmployess = async () => {
     let messagesRef = fire
       .database()
       .ref("employees")
       .orderByKey()
       .limitToLast(100);
-    let emps = [];
-    this.setState({ loading: true });
-    messagesRef.once("value").then(snapshot => {
+      let emps = [];
+      let snapshot = await messagesRef.once("value")
+
       emps = Object.entries(snapshot.val());
       emps = emps.map(item => item[1]);
       console.log(emps);
       // let employee = { snapshot.val(), id: snapshot.key };
-      this.setState({ employees: emps, loading: false });
+      this.setState({ employees: emps, loading: false,  name: "",
+      age: "",
+      salary: "", });
       console.log("em", this.state.employees);
-    });
   }
   addMessage(e) {
     e.preventDefault(); // <- prevent form submit from reloading the page
     /* Send the message to Firebase */
+    this.setState({ loading: true });
     const { name, age, salary } = this.state;
     let obj = {
       name: name,
@@ -46,11 +54,8 @@ class App extends Component {
       .database()
       .ref("employees")
       .push(obj);
-    this.setState({
-      name: "",
-      age: "",
-      salary: ""
-    });
+
+      this.getEmployess()
   }
   render() {
     const { name, age, salary, employees, loading } = this.state;
@@ -85,7 +90,7 @@ class App extends Component {
               value={salary}
               onChange={e =>
                 this.setState({
-                  name: e.target.value
+                  salary: e.target.value
                 })
               }
             />
